@@ -15,6 +15,10 @@ public class SecretBoxTest extends SecretBox {
 		throw new UnsupportedOperationException();
 	}
 	
+	public List<BigInteger> getCoefficients() {
+		throw new UnsupportedOperationException();
+	}
+	
 	@Test
 	public void test() {
 		int r = 5;

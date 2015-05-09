@@ -25,6 +25,10 @@ public abstract class SecretBox {
 			BigInteger y = Polynomial.samplePolynomial(coefficients, x);
 			return new Point(x, y);
 		}
+		
+		public List<BigInteger> getCoefficients() {
+			return coefficients;
+		}
 	}
 	
 	protected static class PointSecretBox extends SecretBox {
@@ -38,6 +42,10 @@ public abstract class SecretBox {
 		public Point sample(BigInteger x) {
 			BigInteger y = Polynomial.interpolate(x, points);
 			return new Point(x, y);
+		}
+		
+		public List<BigInteger> getCoefficients() {
+			throw new UnsupportedOperationException();
 		}
 	}
 	
@@ -107,5 +115,11 @@ public abstract class SecretBox {
 			e.printStackTrace();
 			throw new RuntimeException("???");
 		}
+	}
+	
+	// hacks to enable hard-coding of SecretBoxes
+	abstract List<BigInteger> getCoefficients();
+	public SecretBox fromCoefficients(List<BigInteger> coefficients) {
+		return new CoefficientSecretBox(coefficients);
 	}
 }
