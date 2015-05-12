@@ -36,4 +36,16 @@ public class SecretBoxTest extends SecretBox {
 		assertTrue(Arrays.equals(a.secretHash(), b.secretHash()));
 		assertTrue(Arrays.equals(a.hmac(c), b.hmac(c)));
 	}
+	
+	@Test
+	public void testSecretHashLength() {
+		SecretBox b = randomSecretBox(5);
+		assertEquals(32, b.secretHash().length);
+	}
+	
+	@Test
+	public void testHmacLength() {
+		SecretBox b = randomSecretBox(5);
+		assertEquals(32, b.hmac(BigInteger.ZERO).length);
+	}
 }
