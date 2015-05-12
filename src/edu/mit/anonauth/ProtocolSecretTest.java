@@ -1,5 +1,14 @@
 package edu.mit.anonauth;
 
+import static org.junit.Assert.*;
+
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.Test;
+
 public class ProtocolSecretTest extends ProtocolSecret {
     
     @Test

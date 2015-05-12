@@ -1,12 +1,9 @@
 package edu.mit.anonauth;
 
-import java.io.IOException;
-import java.lang.Math;
-import java.lang.ref.WeakReference;
-import java.util.Arrays;
-import java.util.Collections; 
-import java.util.HashMap; 
-import java.util.Random;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class ProtocolSecret {
     private byte[] secretHash;
