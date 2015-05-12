@@ -29,11 +29,8 @@ public class ProtocolSecret {
         secrets = new ArrayList<SecretBox>();
         // One-time run to hardcode the boxes.
         List<BigInteger> coeffs1 = randomSecretBox(1).getCoefficients; 
-        List<BigInteger> coeffs2 = randomSecretBox(2).getCoefficients;
         System.println(coeffs1);
-        System.println(coeffs2);
         SecretBox box1 = fromCoefficients(coeffs1);
-        SecretBox box2 = fromCoefficients(coeffs2);
 
         // How do we initialize the secret hash and challenge?  
         secretHash = box1.secretHash();  // Must be 32 bytes
