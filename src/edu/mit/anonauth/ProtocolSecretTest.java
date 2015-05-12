@@ -12,6 +12,9 @@ public class ProtocolSecretTest extends ProtocolSecret {
     /* Card's parsing and response protocol. */
     public byte[] parseBroadcast(byte[] broadcast){
      // k |( x | y )*k | hashSecret | challenge (max 255)
+
+        // TODO: Set PRIVATE_POINTS
+        
                  Byte kByte = broadcast[0];
                  int k = kByte.intValue();
                  List<Point> points = new ArrayList<Point>();

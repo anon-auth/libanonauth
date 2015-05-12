@@ -36,6 +36,17 @@ public class ProtocolSecret {
         secretHash = box1.secretHash();  // Must be 32 bytes
         // challenge = new byte[16];
         challenge = cleanByteArray(new BigInteger(16, rand), 16);
+
+        publicPoints = new ArrayList<Point>();
+        Random rand = new Random();
+        while (publicPoints.size() < polyDegree) {
+            // Consider using Sets instead of Lists...
+            BigInteger xCoord = new BigInteger(16, rand);  // Between 0 and 2^16 - 1
+            Point newPoint = secrets.get(polyDegree).sample(xCoord);
+            if (newPoint.y.compareTo(BigInteger.valueOf(0)) == 1) {
+                publicPoints.add(newPoint);
+            }
+        }
     }
     
     /* 
