@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 public class ProtocolSecret {
     private byte[] secretHash;
@@ -25,9 +26,9 @@ public class ProtocolSecret {
         // maxPolyDegree = 2;
         secrets = new ArrayList<SecretBox>();
         // One-time run to hardcode the boxes.
-        List<BigInteger> coeffs1 = randomSecretBox(1).getCoefficients; 
+        List<BigInteger> coeffs1 = SecretBox.randomSecretBox(1).getCoefficients; 
         System.println(coeffs1);
-        SecretBox box1 = fromCoefficients(coeffs1);
+        SecretBox box1 = SecretBox.fromCoefficients(coeffs1);
 
         // How do we initialize the secret hash and challenge?  
         secretHash = box1.secretHash();  // Must be 32 bytes
@@ -82,7 +83,7 @@ public class ProtocolSecret {
             array = tmp;
         }
         byte[] fixedArray = new byte[fixedLength];
-        System.arraycopy(array, 0, fixedArray, fixedLength - array.size(), array.size())
+        System.arraycopy(array, 0, fixedArray, fixedLength - array.length, array.length);
         return fixedArray;
     }
     
