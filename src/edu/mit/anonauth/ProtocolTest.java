@@ -7,18 +7,8 @@ import org.junit.Test;
 public class ProtocolTest {
 	
     @Test
-    public void testBasicExchangeSmallR() {
+    public void testBasicExchange() {
     	int r = 5;
-    	int user = 5001;
-    	
-    	ProtocolDoor door = new ProtocolDoor(r);
-    	ProtocolCard card = new ProtocolCard(door.privatePoints(user));
-    	assertTrue(exchange(door, card));
-    }
-    
-    @Test
-    public void testBasicExchangeLargeR() {
-    	int r = 500;
     	int user = 5001;
     	
     	ProtocolDoor door = new ProtocolDoor(r);
