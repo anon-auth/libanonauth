@@ -2,13 +2,17 @@ package edu.mit.anonauth;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+/*
+ * Class to contain protocol secret.  
+ */
 public class ProtocolSecret {
     private byte[] secretHash;
-    private byte[] challenge;
+    private BigInteger challenge;
     private List<SecretBox> secrets;  // List of polynomials.  Index corresponds to poly degree.  
     private HashMap<String, List<Point>> userPoints = new HashMap<String, List<Point>>();  
     // Hashes username to their list of private points/secret shares
@@ -22,29 +26,26 @@ public class ProtocolSecret {
     }
     
     public void setUpScheme() {
-        polyDegree = 1;
+        polyDegree = 2;
         // maxPolyDegree = 2;
         secrets = new ArrayList<SecretBox>();
         // One-time run to hardcode the boxes.
-        List<BigInteger> coeffs1 = SecretBox.randomSecretBox(1).getCoefficients; 
-        System.println(coeffs1);
-        SecretBox box1 = SecretBox.fromCoefficients(coeffs1);
-
-        // How do we initialize the secret hash and challenge?  
+        SecretBox rbox = SecretBox.randomSecretBox(1);
+        // List<BigInteger> coeffs1 = rbox.getCoefficients(); 
+        // System.println(coeffs1);
+        List<BigInteger> coeffs1 = new ArrayList<BigInteger>();
+        coeffs1.add(BigInteger.valueOf(3));
+        coeffs1.add(BigInteger.valueOf(2));
+        coeffs1.add(BigInteger.valueOf(1));
+        // Secret polynomial is y = x^2 + 2x + 3; secret is 3.
+        SecretBox box1 = rbox.fromCoefficients(coeffs1);
+        secrets.add(box1);
         secretHash = box1.secretHash();  // Must be 32 bytes
-        // challenge = new byte[16];
-        challenge = cleanByteArray(new BigInteger(16, rand), 16);
+        challenge = BigInteger.valueOf(201);  
 
         publicPoints = new ArrayList<Point>();
-        Random rand = new Random();
-        while (publicPoints.size() < polyDegree) {
-            // Consider using Sets instead of Lists...
-            BigInteger xCoord = new BigInteger(16, rand);  // Between 0 and 2^16 - 1
-            Point newPoint = secrets.get(polyDegree).sample(xCoord);
-            if (newPoint.y.compareTo(BigInteger.valueOf(0)) == 1) {
-                publicPoints.add(newPoint);
-            }
-        }
+        publicPoints.add(new Point(BigInteger.valueOf(10), BigInteger.valueOf(123)));
+        publicPoints.add(new Point(BigInteger.valueOf(1), BigInteger.valueOf(6)));
     }
     
     /* 
@@ -56,18 +57,18 @@ public class ProtocolSecret {
     Challenge - 16 bytes
     */
     public byte[] getBroadcast(){
-        byte[] command = new byte[]{};
-        command[0] = (byte) polyDegree;  // k = 1;
+        byte[] command = new byte[255];
+        command[0] = (byte) polyDegree;  // k = 2;
         for (int i = 0; i < polyDegree; i++) {
-            // Need k points in command.
+            // Need k points in command sent.
             Point p = publicPoints.get(i);
             byte[] xBytes = cleanByteArray(p.x, 2);
             byte[] yBytes = cleanByteArray(p.y, 16);
             System.arraycopy(xBytes, 0, command, 1 + i*18, 2);
             System.arraycopy(yBytes, 0, command, 3 + i*18, 16);
         }
-        System.arraycopy(secretHash, polyDegree*32, command, 1 + polyDegree*18, 32);
-        System.arraycopy(challenge, polyDegree*16, command, 1 + polyDegree*18 + 32, 16);
+        System.arraycopy(secretHash, 0, command, 1 + polyDegree*18, 32);
+        System.arraycopy(cleanByteArray(challenge, 16), 0, command, 1 + polyDegree*18 + 32, 16);
         return command;
     }
 
@@ -88,7 +89,7 @@ public class ProtocolSecret {
     }
     
     public boolean matchesHMAC(byte[] response) {
-        return (box1.hmac(challenge)).equals(response);
+        return Arrays.equals(secrets.get(0).hmac(challenge), response);
     }
 
 }
