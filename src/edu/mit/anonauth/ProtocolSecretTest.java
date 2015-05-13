@@ -10,7 +10,18 @@ import java.util.List;
 import org.junit.Test;
 
 public class ProtocolSecretTest extends ProtocolSecret {
+	
+	public ProtocolSecretTest() {
+		super(0);
+	}
     
+    /*
+     * Tests a simple decryption/encryption exchange.
+     * getBroadcast() returns the byte array the door broadcasts
+     * over NFC, while response returns the byte array the 
+     * card sends back.  The final assertTrue is done by the 
+     * door, to determine whether or not the authorization was successful.
+     */
     @Test
     public void test() {
         byte[] command = getBroadcast();
@@ -22,8 +33,10 @@ public class ProtocolSecretTest extends ProtocolSecret {
     public byte[] parseBroadcast(byte[] broadcast){
      // k |( x | y )*k | hashSecret | challenge (max 255)
 
-        // TODO: Set PRIVATE_POINTS
-        
+        Point[] PRIVATE_POINTS = new Point[3];
+        PRIVATE_POINTS[0] = new Point(BigInteger.valueOf(5), BigInteger.valueOf(4));
+        PRIVATE_POINTS[1] = new Point(BigInteger.valueOf(5), BigInteger.valueOf(102));
+        PRIVATE_POINTS[2] = new Point(BigInteger.valueOf(5), BigInteger.valueOf(38));
                  Byte kByte = broadcast[0];
                  int k = kByte.intValue();
                  List<Point> points = new ArrayList<Point>();
@@ -34,7 +47,6 @@ public class ProtocolSecretTest extends ProtocolSecret {
 
                  byte[] hashedSecret = Arrays.copyOfRange(broadcast, hashBegin, hashBegin + 32); //32 bytes
                  BigInteger challenge = new BigInteger(Arrays.copyOfRange(broadcast, hashBegin + 32, hashBegin + 48)); //16 bytes
-
                  points.add(PRIVATE_POINTS[k]);
 
                  for (int i = 0; i < k; i++){
@@ -47,16 +59,20 @@ public class ProtocolSecretTest extends ProtocolSecret {
                  }
 
                  SecretBox secretBox = SecretBox.fromPoints(points);
-
+                 
 //                 BigInteger secretPassword = CryptoLibrary.Shamir(points);
                  byte[] hashedSecretPassword = secretBox.secretHash();
-
-                 if (hashedSecretPassword.equals(hashedSecret)){
-     //Not a fake door
+                 //printByteArray(hashedSecretPassword);
+                 //printByteArray(hashedSecret);
+                 if (Arrays.equals(hashedSecretPassword, hashedSecret)) {
+                     // Not a fake door.
                      hmac = secretBox.hmac(challenge);
                  }
 
                  return hmac;
          }
-
+    
+    public void printByteArray(byte[] array) {
+        System.out.println(Arrays.toString(array));
+    }
 }

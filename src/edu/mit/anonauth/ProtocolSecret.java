@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/*
+ * Class to contain protocol secret.  
+ */
 public class ProtocolSecret {
 	
     /**
@@ -223,5 +226,9 @@ public class ProtocolSecret {
         
         // Place integer in remaining spaces
         System.arraycopy(bytes, 0, array, offset, bytes.length);
+    }
+    
+    public boolean matchesHMAC(byte[] response) {
+    	return Arrays.equals(secrets.get(0).hmac(challenge), response);
     }
 }
