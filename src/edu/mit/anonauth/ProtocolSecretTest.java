@@ -30,7 +30,7 @@ public class ProtocolSecretTest extends ProtocolSecret {
         byte[] command = getBroadcast();
         //printByteArray(command);
         byte[] response = parseBroadcast(command);
-        assertTrue(matchesHMAC(response));
+        assertTrue(checkResponse(response));
     }
     
     /* Card's parsing and response protocol. */

@@ -115,10 +115,10 @@ public class ProtocolSecret {
      * if the door should be opened).
      * 
      * Format:
-     *   TODO: what is the format?
+     *   32 bytes  HMAC
      */
     public boolean checkResponse(byte[] response) {
-    	throw new UnsupportedOperationException("TODO");
+    	return Arrays.equals(currentSecretBox().hmac(challenge), response);
     }
     
     /**
@@ -226,16 +226,6 @@ public class ProtocolSecret {
         
         // Place integer in remaining spaces
         System.arraycopy(bytes, 0, array, offset, bytes.length);
-    }
-    
-    /**
-     * Check a byte array against the current SecretBox's HMAC 
-     * of its secret and the current challenge.  
-     * @param response the byte array to check the hmac against
-     * @return True if match, False otherwise.
-     */
-    public boolean matchesHMAC(byte[] response) {
-    	return Arrays.equals(secrets.get(polyDegree).hmac(challenge), response);
     }
     
     /**
