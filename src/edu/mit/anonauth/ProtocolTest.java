@@ -4,9 +4,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-public class ProtocolDoorTest extends ProtocolDoor {
-	
-	public ProtocolDoorTest() { super(2); }
+public class ProtocolTest {
 	
     @Test
     public void testBasicExchangeSmallR() {
