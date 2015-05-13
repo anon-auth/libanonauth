@@ -57,8 +57,8 @@ public class ProtocolSecret {
     	blacklist = new ArrayList<BigInteger>();
     	
     	// Generate all the polynomials!
-    	for (int i = 0; i <= polyDegree; i++) {
-    		SecretBox box = SecretBox.randomSecretBox(i);
+    	for (int i = 0; i <= maxPolyDegree; i++) {
+    		SecretBox box = SecretBox.randomSecretBox(i+1);
     		secrets.add(box);
     	}
     	
