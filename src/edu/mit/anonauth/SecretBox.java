@@ -119,7 +119,7 @@ public abstract class SecretBox {
 	
 	// hacks to enable hard-coding of SecretBoxes
 	abstract List<BigInteger> getCoefficients();
-	public SecretBox fromCoefficients(List<BigInteger> coefficients) {
+	public static SecretBox fromCoefficients(List<BigInteger> coefficients) {
 		return new CoefficientSecretBox(coefficients);
 	}
 }
