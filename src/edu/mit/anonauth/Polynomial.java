@@ -43,7 +43,7 @@ public class Polynomial {
 			BigInteger coeff = coefficients.get(exp);
 			y = y.add(coeff.multiply(x.pow(exp)));
 		}
-		return y;
+		return y.mod(PRIME);
 	}
 	
 	public static BigInteger interpolate(BigInteger at, List<Point> points) {

@@ -26,6 +26,7 @@ public class PolynomialTest extends Polynomial {
 			// generated numbers should be (mod PRIME)
 			assertTrue(ints[i].compareTo(BigInteger.ZERO) >= 0);
 			assertTrue(ints[i].compareTo(PRIME) < 0);
+			assertTrue(ints[i].bitLength() <= 128);
 			
 			// generated numbers should probably be distinct
 			for (int j = 0; j < i; j++) {
@@ -66,6 +67,18 @@ public class PolynomialTest extends Polynomial {
 		
 		assertEquals(BigInteger.ZERO, samplePolynomial(coefficients, BigInteger.ZERO));
 		assertEquals(BigInteger.valueOf(5), samplePolynomial(coefficients, BigInteger.ONE));
+	}
+	
+	@Test
+	public void testSampleModular() {
+		List<BigInteger> coefficients = new ArrayList<BigInteger>();
+		// y = 1x + 0
+		coefficients.add(BigInteger.ZERO);
+		coefficients.add(BigInteger.ONE);
+		
+		BigInteger smallNum = BigInteger.valueOf(15032);
+		BigInteger bigNum = PRIME.add(smallNum);
+		assertEquals(smallNum, samplePolynomial(coefficients, bigNum));
 	}
 	
 	@Test
