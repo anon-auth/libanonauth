@@ -2,93 +2,226 @@ package edu.mit.anonauth;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 public class ProtocolSecret {
-    private byte[] secretHash;
-    private byte[] challenge;
-    private List<SecretBox> secrets;  // List of polynomials.  Index corresponds to poly degree.  
-    private HashMap<String, List<Point>> userPoints = new HashMap<String, List<Point>>();  
-    // Hashes username to their list of private points/secret shares
-    private List<Point> publicPoints;   // current public points, reset w/ revoke.  
-    private List<String> blacklist;  // List of usernames revoked.  
-    private int polyDegree;  // k = current degree of polynomial
-    private static int maxPolyDegree = 2;  // r = max. degree of polynomial
+	
+    /**
+     * This is k, the current degree of the polynomial. It also matches the
+     * number of users who have been revoked.
+     */
+    private int polyDegree;
     
-    public ProtocolSecret() {
-        setUpScheme();
+    /**
+     * This is r, the revocation parameter, the maximum number of users who may
+     * be revoked. When polyDegree == maxPolyDegree, the system can no longer
+     * support revoke().
+     */
+    private final int maxPolyDegree;
+    
+    /**
+     * A list of the polynomials, in order, which hide the passwords. The i-th
+     * polynomial has degree i.
+     */
+    private final List<SecretBox> secrets; 
+    
+    /**
+     * List of revoked users. Persists across revocations.
+     */
+    private List<BigInteger> blacklist;
+    
+    /**
+     * The public points for the current polynomial (indexed by polyDegree).
+     * When switching to a new polynomial, discard old public points.
+     * 
+     * Note: public points are sampled from [1, r] and private points are
+     * sample from (r, max]. This means that user IDs must be > r.
+     */
+    private List<Point> publicPoints;
+    
+    /**
+     * The current challenge. This value changes upon each successful
+     * authentication attempt.
+     */
+    private BigInteger challenge;
+    
+    
+    public ProtocolSecret(int r) {
+    	polyDegree = -1;	// begins at 0; will increment in advancePolynomial()
+    	maxPolyDegree = r;
+    	secrets = new ArrayList<SecretBox>();
+    	blacklist = new ArrayList<BigInteger>();
+    	
+    	// Generate all the polynomials!
+    	for (int i = 0; i <= polyDegree; i++) {
+    		SecretBox box = SecretBox.randomSecretBox(i);
+    		secrets.add(box);
+    	}
+    	
+    	// Generate public points for the starting polynomial
+    	advancePolynomial();
+    	
+    	// Switch to a new challenge
+    	generateChallenge();
     }
     
-    public void setUpScheme() {
-        polyDegree = 1;
-        // maxPolyDegree = 2;
-        secrets = new ArrayList<SecretBox>();
-        // One-time run to hardcode the boxes.
-        List<BigInteger> coeffs1 = SecretBox.randomSecretBox(1).getCoefficients; 
-        System.println(coeffs1);
-        SecretBox box1 = SecretBox.fromCoefficients(coeffs1);
-
-        // How do we initialize the secret hash and challenge?  
-        secretHash = box1.secretHash();  // Must be 32 bytes
-        // challenge = new byte[16];
-        challenge = cleanByteArray(new BigInteger(16, rand), 16);
-
-        publicPoints = new ArrayList<Point>();
-        Random rand = new Random();
-        while (publicPoints.size() < polyDegree) {
-            // Consider using Sets instead of Lists...
-            BigInteger xCoord = new BigInteger(16, rand);  // Between 0 and 2^16 - 1
-            Point newPoint = secrets.get(polyDegree).sample(xCoord);
-            if (newPoint.y.compareTo(BigInteger.valueOf(0)) == 1) {
-                publicPoints.add(newPoint);
-            }
-        }
-    }
-    
-    /* 
-    Format of the command:
-    1 byte = k (# points)
-    y = 16 bytes
-    x = 2 bytes
-    Hash of secret - 32 bytes
-    Challenge - 16 bytes
-    */
+    /**
+     * Get the bytes to be broadcasted by the door. The contents of the
+     * advertisement only change when a successful authentication takes place.
+     * 
+     * Format:
+     *   1 byte    k (# points to follow)
+     *   
+     *   Each Point:
+     *     2 bytes   x
+     *     16 bytes  y
+     *     
+     *   32 bytes  hash of secret
+     *   16 bytes  challenge
+     */
     public byte[] getBroadcast(){
-        byte[] command = new byte[]{};
-        command[0] = (byte) polyDegree;  // k = 1;
-        for (int i = 0; i < polyDegree; i++) {
-            // Need k points in command.
-            Point p = publicPoints.get(i);
-            byte[] xBytes = cleanByteArray(p.x, 2);
-            byte[] yBytes = cleanByteArray(p.y, 16);
-            System.arraycopy(xBytes, 0, command, 1 + i*18, 2);
-            System.arraycopy(yBytes, 0, command, 3 + i*18, 16);
+    	int totalLength = 1 + (16 + 2) * publicPoints.size() + 32 + 16;
+        byte[] broadcast = new byte[totalLength];
+        int i = 0;
+        
+        // 1 byte - k
+        broadcast[i++] = (byte) polyDegree;
+        
+        // k points
+        for (Point p : publicPoints) {
+        	insertInteger(broadcast, i, p.x, 2);
+        	i = i + 2;
+        	insertInteger(broadcast, i, p.y, 16);
+        	i = i + 16;
         }
-        System.arraycopy(secretHash, polyDegree*32, command, 1 + polyDegree*18, 32);
-        System.arraycopy(challenge, polyDegree*16, command, 1 + polyDegree*18 + 32, 16);
-        return command;
-    }
-
-    /* Returns bigInteger in byte array form of fixed length.  Assumes positive bigInteger */
-    public byte[] cleanByteArray(BigInteger bigInteger, int fixedLength) {
-        // From http://stackoverflow.com/questions/4407779/biginteger-to-byte
-        // If we're only dealing with positive x and y values, 
-        // can get rid of leading sign bit to keep array at size 2 and 16 bytes, respectively.  
-        byte[] array = bigInteger.toByteArray();
-        if (array[0] == 0) {
-            byte[] tmp = new byte[array.length - 1];
-            System.arraycopy(array, 1, tmp, 0, tmp.length);
-            array = tmp;
-        }
-        byte[] fixedArray = new byte[fixedLength];
-        System.arraycopy(array, 0, fixedArray, fixedLength - array.length, array.length);
-        return fixedArray;
+        
+        // secret hash
+        System.arraycopy(currentSecretBox().secretHash(), 0, broadcast, i, 32);
+        i = i + 32;
+        
+        // challenge
+        insertInteger(broadcast, i, challenge, 16);
+        i = i + 16;
+        
+        return broadcast;
     }
     
-    public boolean matchesHMAC(byte[] response) {
-        return (box1.hmac(challenge)).equals(response);
+    /**
+     * Parse a card's response, returning true iff the response is valid (i.e.
+     * if the door should be opened).
+     * 
+     * Format:
+     *   TODO: what is the format?
+     */
+    public boolean checkResponse(byte[] response) {
+    	throw new UnsupportedOperationException("TODO");
     }
-
+    
+    /**
+     * Return a list of a user's r private points. Users are identified by an
+     * ID number, which must be > r (maxPolyDegree).
+     */
+    public List<Point> privatePoints(int user) {
+    	if (user <= maxPolyDegree) {
+    		throw new ArithmeticException("User ID must be greater than maxPolyDegree");
+    	}
+    	
+    	List<Point> points = new ArrayList<Point>();
+    	for (SecretBox box : secrets) {
+    		points.add(box.sample(BigInteger.valueOf(user)));
+    	}
+    	return points;
+    }
+    
+    /**
+     * Revoke a user. This action changes the value of the broadcast.
+     */
+    public void revoke(int user) {
+    	if (user <= maxPolyDegree) {
+    		throw new ArithmeticException("User ID must be greater than maxPolyDegree");
+    	}
+    	
+    	blacklist.add(BigInteger.valueOf(user));
+    	advancePolynomial();
+    }
+    
+    /**
+     * Get the current SecretBox, identified by polyDegree.
+     */
+    protected SecretBox currentSecretBox() {
+    	return secrets.get(polyDegree);
+    }
+    
+    /**
+     * Switch to the next polynomial/SecretBox, incrementing polyDegree and
+     * regenerating all public points.
+     */
+    protected void advancePolynomial() {
+    	// increment index
+    	polyDegree = polyDegree + 1;
+    	SecretBox box = currentSecretBox();
+    	
+    	// regenerate public points
+    	// ...beginning with revoked users' private points
+    	publicPoints = new ArrayList<Point>();
+    	for (BigInteger user : blacklist) {
+    		Point p = box.sample(user);
+    		publicPoints.add(p);
+    	}
+    	
+    	// ...and filling in the rest with x-coordinates from [1, r]
+    	int x = 1;
+    	while (publicPoints.size() < polyDegree) {
+    		Point p = box.sample(BigInteger.valueOf(x));
+    		publicPoints.add(p);
+    		x++;
+    	}
+    }
+    
+    /**
+     * Generate a new 128-bit challenge.
+     */
+    protected void generateChallenge() {
+    	challenge = Polynomial.randomBigInteger();
+    }
+    
+    /**
+     * Convert a BigInteger to binary and insert it into the given position in
+     * an array, right-aligned and padded with zeroes.
+     * @param array array to modify
+     * @param offset index in array at which to place the integer
+     * @param x integer to insert
+     * @param len number of bytes to write
+     */
+    private void insertInteger(byte[] array, int offset, BigInteger x, int len) {
+    	if (x.compareTo(BigInteger.ZERO) < 0) {
+    		throw new ArithmeticException("insertInteger does not support negative numbers");
+    	}
+    	
+    	byte[] bytes = x.toByteArray();
+    	
+        // From http://stackoverflow.com/questions/4407779/biginteger-to-byte
+        // If we're only dealing with positive x and y values, we can get rid
+    	// of leading sign bit to keep array at size 2 and 16 bytes,
+    	// respectively.
+        if (bytes[0] == 0) {
+            byte[] tmp = new byte[bytes.length - 1];
+            System.arraycopy(bytes, 1, tmp, 0, tmp.length);
+            bytes = tmp;
+        }
+        
+        // Length check!
+        if (bytes.length > len) {
+			throw new ArithmeticException("x is too long to fit in len bytes");
+        }
+        
+        // Fill in range with leading zeroes
+        int numZeroes = len - bytes.length;
+        Arrays.fill(array, offset, offset + numZeroes, (byte) 0);
+        offset = offset + numZeroes;
+        
+        // Place integer in remaining spaces
+        System.arraycopy(bytes, 0, array, offset, bytes.length);
+    }
 }
