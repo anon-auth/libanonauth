@@ -228,10 +228,21 @@ public class ProtocolSecret {
         System.arraycopy(bytes, 0, array, offset, bytes.length);
     }
     
+    /**
+     * Check a byte array against the current SecretBox's HMAC 
+     * of its secret and the current challenge.  
+     * @param response the byte array to check the hmac against
+     * @return True if match, False otherwise.
+     */
     public boolean matchesHMAC(byte[] response) {
     	return Arrays.equals(secrets.get(polyDegree).hmac(challenge), response);
     }
     
+    /**
+     * Helper method for ProtocolSecretTest class's constructor.
+     * Sets up current polynomial as x^2 + 2x + 3, challenge = 201.
+     * Called after super(2).
+     */
     protected void setLastPolyForTest() {
         challenge = BigInteger.valueOf(201);
         secrets.remove(2);

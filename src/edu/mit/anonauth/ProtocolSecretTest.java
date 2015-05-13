@@ -23,6 +23,7 @@ public class ProtocolSecretTest extends ProtocolSecret {
      * over NFC, while response returns the byte array the 
      * card sends back.  The final assertTrue is done by the 
      * door, to determine whether or not the authorization was successful.
+     * The hardcoded polynomial (secret) is x^2 + 2x + 3.  
      */
     @Test
     public void test() {
