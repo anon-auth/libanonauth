@@ -12,8 +12,10 @@ import org.junit.Test;
 public class ProtocolSecretTest extends ProtocolSecret {
 	
 	public ProtocolSecretTest() {
-		super(0);
+		super(2);
+		setLastPolyForTest();
 	}
+	
     
     /*
      * Tests a simple decryption/encryption exchange.
@@ -25,6 +27,7 @@ public class ProtocolSecretTest extends ProtocolSecret {
     @Test
     public void test() {
         byte[] command = getBroadcast();
+        //printByteArray(command);
         byte[] response = parseBroadcast(command);
         assertTrue(matchesHMAC(response));
     }
@@ -62,8 +65,6 @@ public class ProtocolSecretTest extends ProtocolSecret {
                  
 //                 BigInteger secretPassword = CryptoLibrary.Shamir(points);
                  byte[] hashedSecretPassword = secretBox.secretHash();
-                 //printByteArray(hashedSecretPassword);
-                 //printByteArray(hashedSecret);
                  if (Arrays.equals(hashedSecretPassword, hashedSecret)) {
                      // Not a fake door.
                      hmac = secretBox.hmac(challenge);

@@ -229,6 +229,18 @@ public class ProtocolSecret {
     }
     
     public boolean matchesHMAC(byte[] response) {
-    	return Arrays.equals(secrets.get(0).hmac(challenge), response);
+    	return Arrays.equals(secrets.get(polyDegree).hmac(challenge), response);
+    }
+    
+    protected void setLastPolyForTest() {
+        challenge = BigInteger.valueOf(201);
+        secrets.remove(2);
+        List<BigInteger> coeffs = new ArrayList<BigInteger>();
+        coeffs.add(BigInteger.valueOf(3));
+        coeffs.add(BigInteger.valueOf(2));
+        coeffs.add(BigInteger.valueOf(1));
+        secrets.add(SecretBox.fromCoefficients(coeffs));
+        advancePolynomial();
+        advancePolynomial();
     }
 }
