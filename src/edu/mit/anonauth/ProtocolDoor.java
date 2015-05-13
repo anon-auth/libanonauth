@@ -6,9 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /*
- * Class to contain protocol secret.  
+ * Class to contain protocol secret.
  */
-public class ProtocolSecret {
+public class ProtocolDoor {
 	
     /**
      * This is k, the current degree of the polynomial. It also matches the
@@ -27,7 +27,7 @@ public class ProtocolSecret {
      * A list of the polynomials, in order, which hide the passwords. The i-th
      * polynomial has degree i.
      */
-    private final List<SecretBox> secrets; 
+    private final List<SecretBox> secrets;
     
     /**
      * List of revoked users. Persists across revocations.
@@ -50,7 +50,7 @@ public class ProtocolSecret {
     private BigInteger challenge;
     
     
-    public ProtocolSecret(int r) {
+    public ProtocolDoor(int r) {
     	polyDegree = -1;	// begins at 0; will increment in advancePolynomial()
     	maxPolyDegree = r;
     	secrets = new ArrayList<SecretBox>();
@@ -226,22 +226,5 @@ public class ProtocolSecret {
         
         // Place integer in remaining spaces
         System.arraycopy(bytes, 0, array, offset, bytes.length);
-    }
-    
-    /**
-     * Helper method for ProtocolSecretTest class's constructor.
-     * Sets up current polynomial as x^2 + 2x + 3, challenge = 201.
-     * Called after super(2).
-     */
-    protected void setLastPolyForTest() {
-        challenge = BigInteger.valueOf(201);
-        secrets.remove(2);
-        List<BigInteger> coeffs = new ArrayList<BigInteger>();
-        coeffs.add(BigInteger.valueOf(3));
-        coeffs.add(BigInteger.valueOf(2));
-        coeffs.add(BigInteger.valueOf(1));
-        secrets.add(SecretBox.fromCoefficients(coeffs));
-        advancePolynomial();
-        advancePolynomial();
     }
 }
