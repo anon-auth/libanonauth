@@ -48,7 +48,12 @@ public class ProtocolTest {
     
     public boolean exchange(ProtocolDoor door, ProtocolCard card) {
     	byte[] broadcast = door.getBroadcast();
-    	byte[] response = card.authenticate(broadcast);
+    	byte[] response;
+    	try {
+        	response = card.authenticate(broadcast);
+    	} catch (ArithmeticException e) {
+    		return false;
+    	}
     	return door.checkResponse(response);
     }
 }
