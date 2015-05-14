@@ -2,6 +2,9 @@ package edu.mit.anonauth;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 
 public class ProtocolTest {
@@ -44,6 +47,30 @@ public class ProtocolTest {
     	door.revoke(userB);
     	assertTrue(exchange(door, cardA));
     	assertFalse(exchange(door, cardB));
+    }
+    
+    @Test
+    public void testMultipleRevocation() {
+    	int r = 50;
+    	
+    	ProtocolDoor door = new ProtocolDoor(r);
+    	
+    	List<ProtocolCard> cards = new ArrayList<ProtocolCard>();
+    	for (int i = 0; i < r; i++) {
+    		int user = r + i + 1;
+    		cards.add(new ProtocolCard(door.privatePoints(user)));
+    	}
+    	
+    	for (int round = 0; round < r; round++) {
+    		for (int i = 0; i < r; i++) {
+    			if (i < round) {
+    				assertFalse(exchange(door, cards.get(i)));
+    			} else {
+    				assertTrue(exchange(door, cards.get(i)));
+    			}
+    		}
+			door.revoke(r + round + 1);
+    	}
     }
     
     public boolean exchange(ProtocolDoor door, ProtocolCard card) {
