@@ -1,8 +1,11 @@
 package edu.mit.anonauth;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
-public class Point {
+public class Point implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
 	
 	public final BigInteger x;
 	public final BigInteger y;

@@ -1,5 +1,6 @@
 package edu.mit.anonauth;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,7 +9,9 @@ import java.util.List;
 /*
  * Class to contain protocol secret.
  */
-public class ProtocolDoor {
+public class ProtocolDoor implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
 	
     /**
      * This is k, the current degree of the polynomial. It also matches the

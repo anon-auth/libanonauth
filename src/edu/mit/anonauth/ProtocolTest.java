@@ -2,6 +2,11 @@ package edu.mit.anonauth;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,8 +77,33 @@ public class ProtocolTest {
 			door.revoke(r + round + 1);
     	}
     }
+	
+	@Test
+	public void testSerialization() throws IOException, ClassNotFoundException {
+		int r = 50;
+    	int userA = 5001;
+    	int userB = 5002;
+		
+		ProtocolDoor door1 = new ProtocolDoor(r);
+		ProtocolCard cardA1 = new ProtocolCard(door1.privatePoints(userA));
+		ProtocolCard cardB1 = new ProtocolCard(door1.privatePoints(userB));
+    	
+    	assertTrue(exchange(door1, cardA1));
+    	assertTrue(exchange(door1, cardB1));
+    	door1.revoke(userB);
+		
+		byte[] doorEnc = serialize(door1);
+		byte[] cardAEnc = serialize(cardA1);
+		byte[] cardBEnc = serialize(cardB1);
+		
+		ProtocolDoor door2 = (ProtocolDoor) deserialize(doorEnc);
+		ProtocolCard cardA2 = (ProtocolCard) deserialize(cardAEnc);
+		ProtocolCard cardB2 = (ProtocolCard) deserialize(cardBEnc);
+    	assertTrue(exchange(door2, cardA2));
+    	assertFalse(exchange(door2, cardB2));
+	}
     
-    public boolean exchange(ProtocolDoor door, ProtocolCard card) {
+    private boolean exchange(ProtocolDoor door, ProtocolCard card) {
     	byte[] broadcast = door.getBroadcast();
     	byte[] response;
     	try {
@@ -82,5 +112,21 @@ public class ProtocolTest {
     		return false;
     	}
     	return door.checkResponse(response);
+    }
+    
+    private byte[] serialize(Object o) throws IOException {
+		// [http://stackoverflow.com/a/8887244]
+		ByteArrayOutputStream bo = new ByteArrayOutputStream();
+		ObjectOutputStream so = new ObjectOutputStream(bo);
+		so.writeObject(o);
+		so.flush();
+		return bo.toByteArray();
+    }
+    
+    private Object deserialize(byte[] enc) throws IOException, ClassNotFoundException {
+		ByteArrayInputStream bi = new ByteArrayInputStream(enc);
+		ObjectInputStream si = new ObjectInputStream(bi);
+		return si.readObject();
+    	
     }
 }

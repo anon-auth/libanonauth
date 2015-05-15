@@ -1,5 +1,6 @@
 package edu.mit.anonauth;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -8,12 +9,16 @@ import java.util.List;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-public abstract class SecretBox {
+public abstract class SecretBox implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
 	
 	protected static String HASH_DIGEST = "SHA-256";
 	protected static String HMAC_DIGEST = "HmacSHA256";
 	
 	protected static class CoefficientSecretBox extends SecretBox {
+		
+		private static final long serialVersionUID = 1L;
 		
 		protected List<BigInteger> coefficients;
 		
@@ -32,6 +37,8 @@ public abstract class SecretBox {
 	}
 	
 	protected static class PointSecretBox extends SecretBox {
+		
+		private static final long serialVersionUID = 1L;
 		
 		protected List<Point> points;
 		

@@ -1,11 +1,14 @@
 package edu.mit.anonauth;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ProtocolCard {
+public class ProtocolCard implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
 	
 	/**
 	 * A list of the user's private points, one per polynomial.
@@ -67,8 +70,8 @@ public class ProtocolCard {
 		return new BigInteger(1, bytes);
 	}
 	
-	@SuppressWarnings("serial")
 	class BroadcastMismatchException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
 		public BroadcastMismatchException() { }
 		public BroadcastMismatchException(String message) { super(message); }
 	}
